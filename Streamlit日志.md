@@ -12,4 +12,5 @@ Streamlit 本质是一个同步单线程框架，适合机器学习模型展示�
 
 * Streamlit本身不支持多线程，只允许在主线程中渲染UI
 * 对实时处理的可操作性不足（while, st.rerun）
-* 
+* 超过100mb的模型无法部署在Streamlit云中
+* Streamlit - webrtc存在bug

@@ -80,11 +80,11 @@ def process_video_frame(frame, detector, predictor, emotion_estimator):
         # 转换为 JPEG 格式并保存为 BytesIO
         img_data = np.frombuffer(fig_frontal.canvas.tostring_rgb(), dtype=np.uint8)
         img_data = img_data.reshape(fig_frontal.canvas.get_width_height()[::-1] + (3,))
-        is_success, buffer3 = cv2.imencode(".jpg", img_data, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        is_success, buffer = cv2.imencode(".jpg", img_data, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         if not is_success:
             raise RuntimeError("Failed to encode frontal landmarks image.")
 
-        processed_Frontal_stream = io.BytesIO(buffer3)
+        processed_Frontal_stream = io.BytesIO(buffer)
         plt.close(fig_frontal)
 
     emotions = {

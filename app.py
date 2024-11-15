@@ -10,13 +10,14 @@ import cv2
 import dlib
 import os
 import logging
+from streamlit_autorefresh import st_autorefresh
 from logging.handlers import RotatingFileHandler
 
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
 from streamlit_echarts import st_echarts
 
-from components import process_video_frame, process_audio_chunk
+from components import process_video_frame, process_audio_chunk, process_eeg
 from components.process_video_frame import plot_emotion_history_echarts
 from utils import EmotionsDlib, plot_landmarks
 
@@ -62,6 +63,7 @@ class GlobalState:
         self.emotion_estimator = None
         self.audio_model = None
         self.video_running = threading.Event()
+        self.eeg_running = threading.Event()
         self.max_history = 20
         self.emotions_history = deque(maxlen=self.max_history)
 
@@ -83,6 +85,7 @@ class GlobalState:
         )
         self.audio_model = audonnx.load(audio_model_path)
         self.video_running.clear()
+        self.eeg_running.clear()
         logging.info("GlobalState 初始化完成")
 
     def update_emotions(self, new_emotion):
@@ -104,7 +107,7 @@ def audio_waveform():
     global_state = st.session_state.global_state
     duration = 3  # seconds
     samplerate = 16000  # Hz
-    st.write("### 录制音频并分析情绪")
+    st.write("### 音频录制与情绪分析")
 
     if st.button("开始录音"):
         logging.info("开始录音...")
@@ -168,6 +171,8 @@ def video_frame_processor():
     global_state = st.session_state.global_state
     st.write("### 实时面部情绪分析")
 
+    # count = st_autorefresh(interval=200, key="test") # 依然是对整个页面进行刷新，会中断从队列中等待图像
+
     # 创建两列，分别显示原始视频流和处理后的视频流
     col1, col2 = st.columns([1, 1])  # 1:1 比例，可以根据需要调整
 
@@ -229,6 +234,27 @@ def initialize():
     else:
         logging.info("GlobalState 已经初始化，无需重复初始化")
 
+def eeg_processor():
+    global_state = st.session_state.global_state
+    st.write("### 实时脑电波数据分析")
+
+    st_autorefresh(interval=2000, key="EEG")
+
+    def toggle_run():
+        if global_state.eeg_running.is_set():
+            logging.info("停止脑电波数据处理")
+            global_state.eeg_running.clear()
+        else:
+            logging.info("启动脑电波数据处理")
+            global_state.eeg_running.set()
+
+    st.button("开始分析 / 停止分析", on_click=toggle_run)
+
+    if global_state.eeg_running.is_set():
+        img_buffer = process_eeg()  # 获取图像字节流
+        if img_buffer:
+            st.image(img_buffer, caption="实时 EEG 雷达图", use_container_width=True)
+
 
 def main():
     initialize()
@@ -236,12 +262,14 @@ def main():
     st.title("多模态情绪分析系统")
 
     st.sidebar.title("选择功能")
-    app_mode = st.sidebar.selectbox("请选择模式", ["音频情绪分析", "面部情绪分析"])
+    app_mode = st.sidebar.selectbox("请选择模式", ["音频情绪分析", "面部情绪分析", "脑电波情绪分析"])
 
     if app_mode == "音频情绪分析":
         audio_waveform()
     elif app_mode == "面部情绪分析":
         video_frame_processor()
+    elif app_mode == "脑电波情绪分析":
+        eeg_processor()
 
 
 if __name__ == "__main__":
