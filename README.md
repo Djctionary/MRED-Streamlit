@@ -45,12 +45,12 @@ MRED-Streamlit is an advanced multimodal online emotion detection system, implem
    conda activate streamlit
    ```
 3. Download and Configure Models
-  1). Download the models from the following link:  
+  1. Download the models from the following link:  
      [Google Drive - MRED Models](https://drive.google.com/file/d/1iMXDkwCtMvlMREYVAWWOxqK3xiSOVbUr/view?usp=drive_link)
   
-  2). Extract the downloaded file and move the **`models`** folder to the root directory of the project.
+  2. Extract the downloaded file and move the **`models`** folder to the root directory of the project.
   
-  3). Ensure the directory structure is as follows:
+  3. Ensure the directory structure is as follows:
      ```
      MRED-Streamlit/
      ├── app.py
